@@ -1,50 +1,35 @@
 import os
 import sys
+import logging
+import json
+import random
+from linebot.models import (TextSendMessage, TemplateSendMessage)
 from linebot import (
-    LineBotApi, WebhookParser
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
+    LineBotApi, WebhookHandler
 )
 
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
-if channel_secret is None:
-    print('Specify LINE_CHANNEL_SECRET as environment variable.')
-    sys.exit(1)
-if channel_access_token is None:
-    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
-    sys.exit(1)
 
 line_bot_api = LineBotApi(channel_access_token)
-parser = WebhookParser(channel_secret)
+handler = WebhookHandler(channel_secret)
 
 
 def callback(request):
-    signature = request.headers['X-Line-Signature']
-
-    # get request body as text
-    body = request.get_data(as_text=True)
-
-    # parse webhook body
     try:
-        events = parser.parse(body, signature)
-    except InvalidSignatureError:
+        # 取得事件JSON
+        body = request.get_data(as_text=True)
+        events = json.loads(body)['events']
+        for event in events:
+            try:
+                # 在Line上面Debug
+                line_bot_api.reply_message(
+                    event["replyToken"], TextSendMessage(text=event["message"]["text"]))
+            except Exception as e:
+                line_bot_api.reply_message(
+                    event["replyToken"], TextSendMessage(text="main.py:{0}".format(e)))
+    # 在主控台Debug
+    except:
+        logging.error(sys.exc_info())
         return 'ERROR'
-
-    # if event is MessageEvent and message is TextMessage, then echo text
-    for event in events:
-        if not isinstance(event, MessageEvent):
-            continue
-        if not isinstance(event.message, TextMessage):
-            continue
-
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=event.message.text)
-        )
-
     return 'OK'
