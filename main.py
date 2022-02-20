@@ -1,33 +1,42 @@
 import os
 import sys
 import logging
-import json
-import random
-from linebot.models import (TextSendMessage, TemplateSendMessage)
 from linebot import (
-    LineBotApi, WebhookHandler
+    LineBotApi, WebhookParser
 )
+from linebot.models import TextSendMessage
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+
+from router import Router
 
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
+if channel_secret is None:
+    print('Specify LINE_CHANNEL_SECRET as environment variable.')
+    sys.exit(1)
+if channel_access_token is None:
+    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
+    sys.exit(1)
 
-line_bot_api = LineBotApi(channel_access_token)
-handler = WebhookHandler(channel_secret)
-
+bot = LineBotApi(channel_access_token)
+parser = WebhookParser(channel_secret)
+router = Router(bot)
 
 def callback(request):
     try:
         # 取得事件JSON
+        signature = request.headers['X-Line-Signature']
         body = request.get_data(as_text=True)
-        events = json.loads(body)['events']
+        try:
+            events = parser.parse(body, signature)
+        except InvalidSignatureError:
+            return 'ERROR'
+        
         for event in events:
-            try:
-                # 在Line上面Debug
-                line_bot_api.reply_message(
-                    event["replyToken"], TextSendMessage(text=event["message"]["text"]))
-            except Exception as e:
-                line_bot_api.reply_message(
-                    event["replyToken"], TextSendMessage(text="main.py:{0}".format(e)))
+            router.route(event)
+
     # 在主控台Debug
     except:
         logging.error(sys.exc_info())
