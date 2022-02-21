@@ -4,7 +4,6 @@ import logging
 from linebot import (
     LineBotApi, WebhookParser
 )
-from linebot.models import TextSendMessage
 from linebot.exceptions import (
     InvalidSignatureError
 )
