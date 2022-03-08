@@ -1,11 +1,13 @@
 import imp
 from controller.auth import AuthController
 from controller.miaBinding import MiaBindingController
+from controller.dbtest import DbTestController
 from model import user
 
 class Router:
-    def __init__(self, bot):
+    def __init__(self, bot, db):
         self.bot = bot
+        self.db = db
         self.middlewares = [
             self.UseMiaBinding,
             self.UseAuthentication

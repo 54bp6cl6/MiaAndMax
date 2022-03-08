@@ -9,6 +9,7 @@ class Controller:
         self.bot = bot
         
     def handleEvent(self, event):
+        print("Into: ",type(self).__name__)
         if isinstance(event, FollowEvent):
             self.handleFollowEvent(event)
         elif isinstance(event, UnfollowEvent):
