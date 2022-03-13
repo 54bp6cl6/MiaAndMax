@@ -1,37 +1,54 @@
-import imp
-from controller.auth import AuthController
+import sys
+from controller.base import Controller
 from controller.miaBinding import MiaBindingController
-from controller.dbtest import DbTestController
-from model import user
+from db.firestoreService import FirestoreService
+from model.service.replyService import ReplyService
+from model.service.userService import UserService
+from view import base
+from linebot import LineBotApi
 
 class Router:
-    def __init__(self, bot, db):
+    def __init__(self, bot: LineBotApi, dbService: FirestoreService):
         self.bot = bot
-        self.db = db
+        self.dbService = dbService
         self.middlewares = [
-            self.UseMiaBinding,
-            self.UseAuthentication
+            self.useLinebotErrorMessage,
+            self.useUserService,
+            self.useMiaBinding,
+            self.useDefautReply,
         ]
+        self.replyService = ReplyService(self.bot)
         
     def route(self, event):
-        self.nextMiddleware(event)
+        params = {
+            "event": event,
+        }
+        self.nextMiddleware(params)
         
-    def nextMiddleware(self, event):
+    def nextMiddleware(self, params):
         if len(self.middlewares) > 0:
             next = self.middlewares.pop(0)
-            next(event)
+            print("Into:",next.__name__,"middleware")
+            next(params)
+    
+    #　========== Middlewares ==========
+    def useLinebotErrorMessage(self, params):
+        try:
+            self.nextMiddleware(params)
+        except :
+            self.replyService.replyMessage(params["event"], base.TextMessage(str(sys.exc_info())))
+
+    def useUserService(self, params):
+        self.userService = UserService(self.dbService, self.replyService)
+        self.nextMiddleware(params)
+
+    def useMiaBinding(self, params):
+        controller = MiaBindingController(self.replyService, self.userService)
+        if not controller.handleEvent(params):
+            self.nextMiddleware(params)
         return
-    
-    def UseMiaBinding(self, event):
-        (bound, _) = user.getMiaId()
-        if bound:
-            self.nextMiddleware(event)
-        else:
-            MiaBindingController(self.bot).handleEvent(event)
-    
-    def UseAuthentication(self, event):
-        if user.Authenticate(event.source.user_id):
-            self.nextMiddleware(event)
-        else:
-            AuthController(self.bot).handleEvent(event)
+
+    def useDefautReply(self, params):
+        controller = Controller(self.replyService)
+        controller.handleEvent(params)
         return

@@ -1,15 +1,14 @@
 import sys
 import logging
-from service import Service
+from botApp import LineBotApp
+
+lineBotApp = LineBotApp()
 
 def callback(request):
     try:
-        params = { "request" : request }
-        servise = Service()
-        servise.nextMiddleware(params)
-
+        lineBotApp.serve(request)
     # 在主控台Debug
-    except:
-        logging.error(sys.exc_info())
+    except Exception as ex:
+        print(ex)
         return 'ERROR'
     return 'OK'
