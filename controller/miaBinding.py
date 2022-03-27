@@ -1,7 +1,7 @@
 from asyncio import events
 from controller.base import Controller
-from model.service.replyService import ReplyService
-from model.service.userService import UserService
+from service.replyService import ReplyService
+from service.userService import UserService
 from view import (
     base
 )
