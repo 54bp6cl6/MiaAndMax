@@ -15,7 +15,8 @@ class Router:
             self.useLinebotErrorMessage,
             self.useUserService,
             self.useMiaBinding,
-            self.useDefautReply,
+            self.useContext,
+            self.useDefaultReply,
         ]
         self.replyService = ReplyService(self.bot)
         
@@ -48,7 +49,14 @@ class Router:
             self.nextMiddleware(params)
         return
 
-    def useDefautReply(self, params):
-        controller = Controller(self.replyService)
-        controller.handleEvent(params)
-        return
+    def useAuthentication(self, params):
+        if self.userService.authenticate(params["event"].source.user_id):
+            self.nextMiddleware(params)
+        else:
+            self.replyService.replyMessage(params["event"], base.TextMessage("本服務只對尊貴且唯一的蘇苡甄小姐開放，謝謝。"))
+    
+    def useContext(self, params):
+        self.nextMiddleware(params)
+
+    def useDefaultReply(self, params):
+        self.nextMiddleware(params)

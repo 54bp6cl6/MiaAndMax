@@ -41,7 +41,7 @@ class Controller:
         return True
         
     def defaultReaction(self, params):
-        self.replyService.replyMessage(params["event"], base.TextMessage("這是一個可愛的罐頭回覆"))
+        pass
         
     def handleFollowEvent(self, params):
         self.defaultReaction(params)

@@ -21,3 +21,6 @@ class UserService:
 
     def sendMessageToMax(self, message: str):
         self.replyService.sendMessage(MAX_ID, message)
+
+    def authenticate(self, user_id: str):
+        return user_id != "" and (user_id == MAX_ID or user_id == self.getMiaId) 
