@@ -2,8 +2,8 @@ import sys
 from controller.base import Controller
 from controller.miaBinding import MiaBindingController
 from db.firestoreService import FirestoreService
-from service.replyService import ReplyService
-from service.userService import UserService
+from service.reply import ReplyService
+from service.user import UserService
 from view import base
 from linebot import LineBotApi
 

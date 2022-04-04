@@ -3,7 +3,7 @@ from linebot.models import (
     FollowEvent, UnfollowEvent, JoinEvent, LeaveEvent, MemberJoinedEvent, MemberLeftEvent,
     MessageEvent, PostbackEvent, AccountLinkEvent, BeaconEvent, ThingsEvent
 )
-from service.replyService import ReplyService
+from service.reply import ReplyService
 from view import base
 
 

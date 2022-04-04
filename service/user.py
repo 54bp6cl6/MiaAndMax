@@ -1,5 +1,5 @@
 from db.firestoreService import FirestoreService
-from service.replyService import ReplyService
+from service.reply import ReplyService
 
 
 MAX_ID = "U53a98b69664f53719b2029433d4c8175"
@@ -11,7 +11,7 @@ class UserService:
         self.dbService = dbService
         self.replyService = replyService
 
-    def getMiaId(self):
+    def getMiaId(self) -> str | None:
         return self.dbService.getUserId(MIA_STR)
 
     def setMiaId(self, user_id: str):

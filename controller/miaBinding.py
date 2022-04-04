@@ -1,13 +1,13 @@
-from asyncio import events
 from controller.base import Controller
-from service.replyService import ReplyService
-from service.userService import UserService
+from service.reply import ReplyService
+from service.user import UserService
 from view import (
     base
 )
 from linebot.models import (
     FollowEvent, UnfollowEvent
 )
+
 
 class MiaBindingController(Controller):
     def __init__(self, replyService: ReplyService, userService: UserService):
@@ -20,13 +20,14 @@ class MiaBindingController(Controller):
             self.handleFollowEvent(params)
         elif mia_id == params["event"].source.user_id and isinstance(params["event"], UnfollowEvent):
             self.handleUnfollowEvent(params)
-        else: 
+        else:
             return False
         return True
-        
+
     def handleFollowEvent(self, params):
         self.userService.setMiaId(params["event"].source.user_id)
-        self.replyService.replyMessage(params["event"], base.TextMessage("Mia 帳號綁定成功"))
+        self.replyService.replyMessage(
+            params["event"], base.TextMessage("Mia 帳號綁定成功"))
 
     def handleUnfollowEvent(self, params):
         self.userService.setMiaId(None)
